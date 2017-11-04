@@ -1,24 +1,35 @@
-function [hdr] = action(filelist,ldrpath, hdrpath,stack_exposure, i, nExposures, write_counter ,outputformat)
+function [hdr] = action(i,  write_counter)
 
+    global ldrpath;
+    global hdrpath;
+    global outputformat;
+    global needTonemap;
+    global nExposures;
+    global filelist;    
+    global stack_exposure;
+    
 var ldr_stack;
         stacklist = filelist(i:(i+(nExposures-1)), :);
         [ldr_stack, ~] = readLDRStack(ldrpath, stacklist, 1);
-%disp(stacklist);
         [lin_fun, ~] = DebevecCRF(ldr_stack, stack_exposure);       
         hdr = BuildHDR(ldr_stack, stack_exposure, 'LUT', lin_fun, 'Deb97', 'log');
-
-        %write_counter = j + 1;               
-        tmo = ReinhardTMO(hdr);
-        tmo_g = tmo.^(1/2.2);
-        imwrite (tmo_g, fullfile(hdrpath, sprintf('%d.JPG', (write_counter))) );
-
-        hdr_small = imresize(hdr, [500 500], 'bilinear'); 
+        
+        %%tonemapping
+        if(needTonemap == 'Y')
+            tmo = ReinhardTMO(hdr);
+            tmo_g = tmo.^(1/2.2);
+            imwrite (tmo_g, fullfile(hdrpath, sprintf('%d.JPG', (write_counter))) );
+        end
+        
         switch(outputformat)
-            case 'hdr'
+            case 'hdrsmall'
+                hdr_small = imresize(hdr, [500 500], 'bilinear');
                 hdrwrite(hdr_small, fullfile(hdrpath, sprintf('%05d.hdr', (write_counter))));                
+            case 'hdr'
+                hdrwrite(hdr, fullfile(hdrpath, sprintf('%05d.hdr', (write_counter))));                
                 
             case 'exr'
-                exrwrite(hdr_small, fullfile(hdrpath, sprintf('%05d.exr', (write_counter)))); 
+                exrwrite(hdr, fullfile(hdrpath, sprintf('%05d.exr', (write_counter)))); 
     
         end
         
