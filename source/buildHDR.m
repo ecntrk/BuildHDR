@@ -5,14 +5,16 @@ function buildHDR()
      prompt = {'Enter LDR image folder path: ',... 
                'Enter HDR image folder path: ',...
                'Input Format: ' ...
-               'Converitng to: (hdr/exr) ',...
+               'Converitng to: (hdr/hdrLatlong/hdrsmall/exr) ',...
                'Tonemap them? (Y/N)',...
                'Enter the number of exposures (per image stack)'};
     dlg_title = '***** build HDR from LDR *****';
     num_lines = [1 75; 1 75; 1 50; 1 50; 1 50; 1 50;];
-    defaultAns = {'~/Documents/lightprobes/',...
-                  '~/Documents/lightprobes/HDR/', ...
-                  'JPG', 'hdrsmall', 'N', '7'};
+    defaultAns = {%'~/Documents/lightprobes/',...
+                  %'~/Documents/lightprobes/HDR/', ...
+                  '/Users/ecntrk/Documents/onlyslf1/untitled folder/',...
+                  '/Users/ecntrk/Desktop/', ...
+                  'JPG', 'hdrLatlong', 'N', '7'};
     inputString = inputdlg(prompt, dlg_title, num_lines, defaultAns); 
     if(isempty(inputString)) %if user presses cancel
        return;
@@ -32,12 +34,27 @@ function buildHDR()
 % we assume they are jpg images (if something else change the extension)
 % this portion also gathers the exposure information (one time processing)
 % to reduce computation.
+
+    if(strcmp(outputformat, 'hdrLatlong')==1)
+        %trying to create the big and small directory 
+        %if it is not there already.
+        [~,~,msgID] = mkdir(hdrpath, 'big');
+        if(strcmp(msgID, 'MATLAB:MKDIR:DirectoryExists') == 1)
+            disp(strcat(strcat(hdrpath,'big/'), ' already exists'));
+        end
+        [~,~,msgID] = mkdir(hdrpath, 'small');
+        if(strcmp(msgID,'MATLAB:MKDIR:DirectoryExists')==1)
+            disp(strcat(strcat(hdrpath,'small/'), ' already exists'));
+        end
+    end
+                
     global filelist;    
     global stack_exposure;
-    filelist = dir(fullfile(ldrpath, ['*.' inputformat]));
-    disp(filelist);
-    [stack_exposure] = ldrStackInfo(ldrpath,filelist, nExposures);
     
+    filelist = dir(fullfile(ldrpath, ['*.' inputformat]));
+    [stack_exposure] = ldrStackInfo(ldrpath,filelist, nExposures);
+       % disp(filelist);
+
 %% Processing the debayer images in the directory   
     rem_imgs = mod(numel(filelist), (nExposures));
     nFrames = uint16(numel(filelist)/(nExposures));
@@ -46,14 +63,15 @@ function buildHDR()
         fprintf('\nNumber of images to be processed: %d', nFrames);
     end 
     
-%% Merge LDR to HDR // might write a more elegant solutions some day    
-    i = 1;
-    %while(i < numel(filelist))
-    %disp(nFrames);
-    parfor j = 35:nFrames-1
-        i = j*nExposures +1;
-        action(i, j+1);
-            
+%% Merge LDR to HDR   
+   tic;
+    for j = 5:7
+        i = j*nExposures+1;
+        action(i,(i+nExposures-1),j+1);
+         
     end                        
     fprintf('\n\n HDR MERGE COMPLETE....\n');
+    fprintf('Wrote %d files\n',nFrames);
+    fprintf('Took %f Minutes\n',(toc/60));
+    
 end
