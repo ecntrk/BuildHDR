@@ -12,7 +12,7 @@ function buildHDR()
     num_lines = [1 75; 1 75; 1 50; 1 50; 1 50; 1 50;];
     defaultAns = {'~/Documents/lightprobes/',...
                   '~/Documents/lightprobes/HDR/', ...
-                  'JPG', 'hdr', 'N', '7'};
+                  'JPG', 'hdrsmall', 'N', '7'};
     inputString = inputdlg(prompt, dlg_title, num_lines, defaultAns); 
     if(isempty(inputString)) %if user presses cancel
        return;
