@@ -13,9 +13,10 @@ stack_exposure = zeros(nExposures, 1);
             error('\n Exif Information is empty \n');            
         end 
 
-        exposure_time = img_info.DigitalCamera.ExposureTime;
-        aperture = img_info.DigitalCamera.FNumber;
-        iso = img_info.DigitalCamera.ISOSpeedRatings;
+        digicam = img_info.DigitalCamera;
+        exposure_time = digicam.ExposureTime;
+        aperture = digicam.FNumber;
+        iso = digicam.ISOSpeedRatings;
 
         [~, value] = EstimateAverageLuminance(exposure_time, aperture, iso);
         stack_exposure(i) = value;

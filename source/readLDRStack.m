@@ -25,7 +25,8 @@ if(n > 0)
     
     try
         if(exist('imfinfo') == 2)
-            img_info = imfinfo(name);
+            img_info1 = imfinfo(name);
+            img_info = img_info1(1);
         end
     catch err
         disp(err);
@@ -101,6 +102,16 @@ if(n > 0)
                         case 48
                             norm_value = 65535.0;
                     end
+                otherwise
+                    colorChannels = 3;
+
+                    switch img_info.BitDepth
+                        case 24
+                            norm_value = 255.0;
+                        case 48
+                            norm_value = 65535.0;
+                    end
+                    
             end
         end  
 
@@ -110,12 +121,14 @@ if(n > 0)
             clear('tmp');
         end
         
-        stack = zeros(img_info.Height, img_info.Width, colorChannels, n, 'single');
+        %stack = zeros(img_info.Height, img_info.Width, colorChannels, n, 'single');
+            stack = zeros(3840, 3840, colorChannels, n, 'single');
 
         for i=1:n
             disp(list(i).name);
             %read an image, and convert it into floating-point
-            img_tmp = imread([dir_name, '/', list(i).name]);  
+            im = imread([dir_name, '/', list(i).name]);  
+            img_tmp = imcrop(im,[955 1 3839 3840]);
 
             %store in the stack
             if(bToSingle)
